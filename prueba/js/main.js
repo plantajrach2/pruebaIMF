@@ -3,10 +3,6 @@ var loader = document.getElementById('loader');
 var error_box = document.getElementById('error_box');
 var tabla = document.getElementById('tabla');
 var formedit = document.getElementById('formularioeditar');
-var costoTotal;
-
-var usuario_id, usuario_nombre, usuario_apellidop, usuario_apellidom, usuario_numero, usuario_fecha, usuario_puesto, usuario_imss, usuario_civil, usuario_curp, nombre, descripcion;
-
 
 
 function agregarActividad(e) {
@@ -68,7 +64,7 @@ function agregarActividad(e) {
 }
 
 function cargarActividades() {
-    tabla.innerHTML = '<tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Apertura</th><th>Cierre</th><th>Hecha</th><th>Acciones</th></tr>';
+    tabla.innerHTML = '<tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Apertura</th><th>Cierre</th><th>Completada</th><th>Acciones</th></tr>';
 
     var peticion = new XMLHttpRequest();
     peticion.open('GET', 'API/loadActividades.php');
@@ -88,7 +84,7 @@ function cargarActividades() {
             
             elemento.innerHTML += ("<td>" + datos[i].fecha_apertura + "</td>");
             elemento.innerHTML += ("<td>" + datos[i].fecha_cierre + "</td>");
-            elemento.innerHTML += ("<input type='checkbox' id='scales' name='scales' "+(datos[i].hecha ? "checked" : "")+" onchange='marcaHecha("+datos[i].id_actividad+","+!datos[i].hecha+")' />");
+            elemento.innerHTML += ("<td><input type='checkbox' id='scales' class='form-check-input' name='scales' "+(datos[i].hecha ? "checked" : "")+" onchange='marcaHecha("+datos[i].id_actividad+","+!datos[i].hecha+")' /></div></td>");
             elemento.innerHTML += ("<td><a href='editar-actividad.php?id=" + datos[i].id_actividad + "'>editar</a></td>");
 
 
@@ -195,26 +191,30 @@ function marcaHecha(id_actividad,hecha) {
     loader.classList.add('active');
 
     peticion.onload = function () {
-         cargarActividades();
+        cargarActividades();
     }
 
     peticion.onreadystatechange = function () {
 
-        if (peticion.readyState == 4 && peticion.status == 404) {
+        if (peticion.readyState == 4) {
 
-            Swal.fire({
-                title: "Movimiento exitoso",
-                text: "¡Se añadió nueva actividad!",
-                icon: "success"
-            });
+            if (peticion.status == 200) {
 
-        }else{
-            
-            Swal.fire({
-                title: "Movimiento erroneo",
-                text: "¡No fue posible añadir nueva actividad!",
-                icon: "error"
-            });
+                Swal.fire({
+                    title: "Movimiento exitoso",
+                    text: "Actividad actualizada correctamente",
+                    icon: "success"
+                });
+
+            } else {
+
+                Swal.fire({
+                    title: "Error",
+                    text: "No fue posible actualizar",
+                    icon: "error"
+                });
+
+            }
 
         }
 

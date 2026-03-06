@@ -21,8 +21,8 @@ class Actividad extends ConexionDB {
                 'nombre'        =>  $fila['nombre'],
                 'descripcion'   =>  $fila['descripcion'],
                 'fecha_apertura'=>  $fila['fecha_apertura'],
-                'fecha_cierre'=>  $fila['fecha_cierre'],
-                'hecha'=>  $fila['hecha'] 
+                'fecha_cierre'  =>  $fila['fecha_cierre'],
+                'hecha'         =>  $fila['hecha'] 
             ];
         
             array_push($respuesta,$usuario);
