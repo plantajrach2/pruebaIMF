@@ -81,9 +81,11 @@ class Actividad extends ConexionDB {
 
     public function updateActividad(){
 
-        $statement = $this->conexion->prepare("UPDATE `actividades` SET `nombre` = ?, `descripcion` = ?,`fecha_apertura` = ?,`fecha_cierre` = ?,'hecha'=? WHERE `id_actividad` = ?");
-        $statement->bind_param("ssssii", $_POST['nombre'],$_POST['descripcion'],$_POST['fecha_apertura'],$_POST['fecha_cierre'],$_POST['hecha'],$_POST['id_actividad']);
-       $respuesta=$statement->execute();
+        $hecha = ($_POST['hecha'] === "true") ? 1 : 0;
+
+        $statement = $this->conexion->prepare("UPDATE `actividades` SET `nombre` = ?, `descripcion` = ?,`fecha_apertura` = ?,`fecha_cierre` = ?,`hecha`=? WHERE `id_actividad` = ?");
+        $statement->bind_param("ssssii", $_POST['nombre'],$_POST['descripcion'],$_POST['fecha_apertura'],$_POST['fecha_cierre'],$hecha,$_POST['id_actividad']);
+        $respuesta=$statement->execute();
         
         if ($this->conexion->affected_rows<=0) {
             # code...

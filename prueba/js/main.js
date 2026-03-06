@@ -63,43 +63,59 @@ function agregarActividad(e) {
 
 }
 
-function cargarActividades() {
+async function cargarActividades() {
+
     tabla.innerHTML = '<tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Apertura</th><th>Cierre</th><th>Completada</th><th>Acciones</th></tr>';
 
-    var peticion = new XMLHttpRequest();
-    peticion.open('GET', 'API/loadActividades.php');
-    // 
-    loader.classList.add('active');
+    try {
 
-    peticion.onload = function () {
+        var peticion = new XMLHttpRequest();
+        peticion.open('GET', 'API/loadActividades.php');
+        // 
+        loader.classList.add('active');
 
-        var datos = JSON.parse(peticion.responseText);
+        peticion.onload = function () {
 
-        for (i = 0; i < datos.length; i++) {
-            var elemento = document.createElement('tr');
+            var datos = JSON.parse(peticion.responseText);
 
-            elemento.innerHTML += ("<td>" + datos[i].id_actividad + "</td>");
-            elemento.innerHTML += ("<td>" + datos[i].nombre + "</td>");
-            elemento.innerHTML += ("<td>" + datos[i].descripcion + "</td>");
-            
-            elemento.innerHTML += ("<td>" + datos[i].fecha_apertura + "</td>");
-            elemento.innerHTML += ("<td>" + datos[i].fecha_cierre + "</td>");
-            elemento.innerHTML += ("<td><input type='checkbox' id='scales' class='form-check-input' name='scales' "+(datos[i].hecha ? "checked" : "")+" onchange='marcaHecha("+datos[i].id_actividad+","+!datos[i].hecha+")' /></div></td>");
-            elemento.innerHTML += ("<td><a href='editar-actividad.php?id=" + datos[i].id_actividad + "'>editar</a></td>");
+            for (i = 0; i < datos.length; i++) {
+                var elemento = document.createElement('tr');
+
+                elemento.innerHTML += ("<td>" + datos[i].id_actividad + "</td>");
+                elemento.innerHTML += ("<td>" + datos[i].nombre + "</td>");
+                elemento.innerHTML += ("<td>" + datos[i].descripcion + "</td>");
+                
+                elemento.innerHTML += ("<td>" + datos[i].fecha_apertura + "</td>");
+                elemento.innerHTML += ("<td>" + datos[i].fecha_cierre + "</td>");
+                elemento.innerHTML += ("<td><input type='checkbox' id='scales' class='form-check-input' name='scales' "+(datos[i].hecha ? "checked" : "")+" onchange='marcaHecha("+datos[i].id_actividad+","+!datos[i].hecha+")' /></div></td>");
+                elemento.innerHTML += ("<td><a href='editar-actividad.php?id=" + datos[i].id_actividad + "'>editar</a></td>");
 
 
-            document.getElementById('tabla').appendChild(elemento);
+                document.getElementById('tabla').appendChild(elemento);
 
+            }
         }
-    }
 
-    peticion.onreadystatechange = function () {
-        if (peticion.readyState == 4 && peticion.status == 200) {
-            loader.classList.remove('active');
+        peticion.onreadystatechange = function () {
+            if (peticion.readyState == 4 && peticion.status == 200) {
+                loader.classList.remove('active');
+            }
         }
-    }
 
-    peticion.send();
+        peticion.send();
+        
+    } catch (error) {
+
+        Swal.fire({
+            title: "Movimiento erroneo",
+            text: "¡No fue posible cargar la información!",
+            icon: "error"
+        });
+
+        console.log(error);
+
+    }    
+
 }
 
 function getActividad(idp) {
@@ -148,9 +164,11 @@ function editarActividad(e) {
     id_actividad = formularioeditar.id_actividad.value.trim();
     nombre = formularioeditar.nombre.value.trim();
     descripcion = formularioeditar.descripcion.value.trim();
-    hecha = formulario.hecha.checked;
+    fecha_apertura = formularioeditar.fecha_apertura.value.trim();
+    fecha_cierre = formularioeditar.fecha_cierre.value.trim();
+    hecha = formularioeditar.hecha.checked;
 
-    var parametros = "id_actividad=" + id_actividad + "&nombre=" + nombre + "&descripcion=" + descripcion+ "&hecha=" + hecha;
+    var parametros = "id_actividad=" + id_actividad + "&nombre=" + nombre + "&descripcion=" + descripcion+"&fecha_apertura=" + fecha_apertura + "&fecha_cierre=" + fecha_cierre+ "&hecha=" + hecha;
 
     peticion.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -160,7 +178,7 @@ function editarActividad(e) {
         // formularioeditar.nombre.value=''; etc, etc...
         // formularioeditar.reset();
         alert("Edición exitosa");
-        location.reload();
+        //location.reload();
     }
 
     peticion.onreadystatechange = function () {
@@ -175,52 +193,65 @@ function editarActividad(e) {
 
 }
 
-function marcaHecha(id_actividad,hecha) {
+async function marcaHecha(id_actividad,hecha) {
+    
+    try {
+        
+        var peticion = new XMLHttpRequest();
 
-    var peticion = new XMLHttpRequest();
+        peticion.open('POST', 'API/markDone.php');
 
-    peticion.open('POST', 'API/markDone.php');
+        hecha;
+        id_actividad;
 
-    hecha;
-    id_actividad;
+        var parametros = "id_actividad=" + id_actividad +"&hecha=" + hecha;
 
-    var parametros = "id_actividad=" + id_actividad +"&hecha=" + hecha;
+        peticion.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    peticion.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        loader.classList.add('active');
 
-    loader.classList.add('active');
+        peticion.onload = function () {
+            cargarActividades();
+        }
 
-    peticion.onload = function () {
-        cargarActividades();
-    }
+        peticion.onreadystatechange = function () {
 
-    peticion.onreadystatechange = function () {
+            if (peticion.readyState == 4) {
 
-        if (peticion.readyState == 4) {
+                if (peticion.status == 200) {
 
-            if (peticion.status == 200) {
+                    Swal.fire({
+                        title: "Movimiento exitoso",
+                        text: "Actividad actualizada correctamente",
+                        icon: "success"
+                    });
 
-                Swal.fire({
-                    title: "Movimiento exitoso",
-                    text: "Actividad actualizada correctamente",
-                    icon: "success"
-                });
+                } else {
 
-            } else {
+                    Swal.fire({
+                        title: "Error",
+                        text: "No fue posible actualizar",
+                        icon: "error"
+                    });
 
-                Swal.fire({
-                    title: "Error",
-                    text: "No fue posible actualizar",
-                    icon: "error"
-                });
+                }
 
             }
 
         }
 
-    }
+        peticion.send(parametros);
 
-    peticion.send(parametros);
+    } catch (error) {
+
+         Swal.fire({
+            title: "Error",
+            text: "No fue posible actualizar la actividad",
+            icon: "error"
+        });
+
+        console.error(error);
+    }
 
 }
 
